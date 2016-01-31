@@ -1,0 +1,78 @@
+module.exports = function(app){
+    var io = require('socket.io')(app);
+    var sockets = {};
+    var socketShops={};
+    io.use(function(socket,next){
+        console.log('socket登录验证');
+        socket.name="hello";
+        console.log(socket.id);
+        console.log(socket.name) ;
+        var query = socket.handshake.query;
+        if(!query.role) return next(new Error("登录失败！"));
+        socket.role = query.role;
+        socket.name = query.name;
+        console.log(socket.name) ;
+        next();
+    });
+    //普通用户房间
+    io.of('user').on('connection', function (socket) {
+        console.log('用户进入');
+        var id = socket.id;
+        socket[id]=socket;
+        //socket.send({ cmd:'list',data:Object.keys(socketShops) });
+        socket.on('message',function(packet){
+            var sp = packet.cmd;
+            switch(sp) {
+                case "shop":
+                    //socket.broadcast.send({cmd:"list",data:Object.keys(socketShops)});
+                    break;
+                case "chat":
+                    console.log(packet);
+                      socketShops[packet.data.id].send({cmd: "rec", data: packet.data.message});
+                      sockets[packet.data.id].send({cmd: "rec", data: packet.data.message});
+                    break;
+            }
+        });
+        socket.on('disconnect',function(){
+            delete sockets[id];
+        });
+    });
+    //商户房间
+    io.of('shop').on('connection',function(socket){
+        console.log('商户进入');
+        var name=socket.handshake.query.name;
+        var id = socket.id;
+        socketShops[id] = socket;
+        //socket.to('user').emit('message',{ cmd:'online',data:{ id:id,name:socket.name } });
+        //socket.join('user').broadcast.emit('message',{ cmd:'online',data:{ id:id,name:socket.name } });
+        socket.broadcast.send({ cmd:'online',data:{ id:id,name:name } }) ;
+        console.log("online");
+        console.log(id);
+        socket.on('message',function(packet){
+            var cmd = packet.cmd;
+            switch(cmd) {
+                case "shop":
+                    //socket.broadcast.send({cmd:"list",data:Object.keys(socketShops)});
+                    break;
+                case "shopList"    :
+                    console.log("走到这里了");
+                    socket.send( {cmd:"list",data:Object.keys(socketShops)});
+                    break;
+                case "chat":
+                    console.log(packet);
+                    if(role=="2")  {
+                        socketShops[packet.data.id].send({cmd: "rec", data: packet.data.message});
+                    }
+                    else{
+                        sockets[packet.data.id].send({cmd: "rec", data: packet.data.message});
+
+                    }
+                    break;
+            }
+        });
+        socket.on('disconnect',function(){
+            delete socketShops[id];
+            socket.to('user').send({ cmd:'offline',data:{ id:id,name:socket.name } });
+        });
+    });
+};

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>用户登录</title>
+    <script>
+        function login(){
+            var userName=document.getElementById("userName").value;
+            var pwd=document.getElementById("pwd").value;
+            var userType=document.getElementById("userType").value;
+            window.location.href="list.html?userName="+userName+"&pwd="+pwd+"&userType="+userType;
+        }
+    </script>
+</head>
+<body>
+<div style="margin:auto">
+<table border="1" align="center" > <tr><td><label>用 户 名：</label></td><td><input id="userName"></td></tr>
+        <tr><td><label>密　　码：</label></td><td><input id="pwd"></td></tr>
+        <tr><td><label>用户类型：</label></td>
+            <td align="center">
+                <select id="userType">
+                 <option value="1">商家用户</option>
+                 <option value="2">个人用户</option>
+                </select>
+            </td>
+        </tr>
+        <tr><td align="center"><button onclick="login()">登录</button></td><td align="center"><button>取消</button></td></tr>
+</table>
+</div>
+</body>
+</html>

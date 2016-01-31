@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-CN">
+    <meta charset="UTF-8">
+    <title>用户页面</title>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    function getCookie(){
+        var result = {};
+        var arr = document.cookie.split(";");
+        arr.map(function(a){
+            var cache = a.split('=');
+            result[cache[0].trim()] = cache[1].trim();
+        });
+        return result;
+    }
+    var services={};
+    var params = getCookie();
+    var socket = io.connect();
+    socket.on('connect',function(){
+        console.log('连接成功');
+        socket.send({cmd:"online",data:""});
+    });
+    socket.on('message', function (data) {
+        console.log('收到消息:'+JSON.stringify(data));
+        switch (data.cmd) {
+            case "rec":
+                document.getElementById("receiveTxt").value = data.data;
+                break;
+            case "list":
+                    console.log(data.data);
+                var options = document.getElementById("selectPerson");
+                document.getElementById("selectPerson").options.length=0;
+                services=data.data.services;
+                    for(var i in data.data.names)   {
+                        var opp = new Option(data.data.names[i],i );
+                        options.add(opp);
+                    }
+                var id = document.getElementById("selectPerson").value;
+                document.getElementById("shopText").value=services[id];
+                break;
+            case "online":
+                    console.log("online")
+                console.log(data);
+                var options = document.getElementById("selectPerson");
+                //document.getElementById("selectPerson").options.length=0;
+                var opp = new Option(data.data.name,data.data.id );
+                options.add(opp);
+                    services[data.data.id]=data.data.service;
+
+                break;
+            case "ok":
+                document.getElementById("receiveTxt").value = data.data;
+                break;
+       }
+    });
+
+
+
+  function sendMessage(){
+      var data=document.getElementById("sendTxt").value;
+      var id = document.getElementById("selectPerson").value; // 选中值
+      socket.send({cmd:"chat",data:{id:id,message:data,tel:params.tel,name:params.name_u  }});
+  }
+
+  function selectChange(){
+      var id = document.getElementById("selectPerson").value;
+      //console.log(services);
+      document.getElementById("shopText").value=services[id] ;
+  }
+
+</script>
+</head>
+<body>
+<h2>用户页</h2>
+<div id="shop">
+<table align="center" border="1"><tr><td>商户列表</td><td><select id="selectPerson"  onchange="selectChange()"></select></td></tr>
+    <tr><td><lable>商家服务</lable></td><td><input type="text" id="shopText"></td></tr>
+        <tr><td><lable>发送内容</lable></td><td><input type="text" id="sendTxt"></td></tr>
+        <tr><td><button onclick="sendMessage()">点单</button></td><td></td></tr>
+        <tr><td><lable>收到的内容</lable></td><td>
+            <div>
+                <textarea type="text" id="receiveTxt"></textarea>
+        </div>
+        </td></tr>
+</table>
+</div>
+</body>
+</html>

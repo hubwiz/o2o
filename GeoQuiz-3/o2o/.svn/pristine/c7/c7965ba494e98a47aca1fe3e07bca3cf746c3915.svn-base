@@ -1,0 +1,61 @@
+module.exports = function(app){
+    var io = require('socket.io')(app);
+    var sockets = {};
+    var socketShops={};
+    var role;
+    io.use(function(socket,next){
+
+        console.log(socket.handshake.query);
+        var user=socket.handshake.query;
+        role=user.role;
+        switch (user.role){
+            case "2" :
+                next();
+                break;
+            case "1" :    //商户
+                next();
+                break;
+            default :  next(new Error("登录失败！")); break;
+
+        }
+    });
+    io.on('connection', function (socket) {
+        if(role==1) {
+        console.log(11111);
+        socketShops[socket.id]=socket; }
+        if(role=="2") {
+            sockets[socket.id] = socket;
+        console.log(222222);
+        }
+        //console.log(socketShops[socket.id]);
+        var id = socket.id;
+        //socket.broadcast.send({cmd:"list",data:Object.keys(socketShops)});
+        socket.on('message',function(packet){
+            var sp=packet.cmd;
+            switch(sp) {
+                case "shop":
+                    //socket.broadcast.send({cmd:"list",data:Object.keys(socketShops)});
+                    break;
+                case "shopList"    :
+                    console.log("走到这里了");
+                    socket.send( {cmd:"list",data:Object.keys(socketShops)});
+                    break;
+                case "chat":
+                    console.log(packet);
+                    if(role=="2")  {
+                        socketShops[packet.data.id].send({cmd: "rec", data: packet.data.message});
+                    }
+                    else{
+                        sockets[packet.data.id].send({cmd: "rec", data: packet.data.message});
+
+                    }
+                    break;
+            }
+        });
+        socket.on('disconnect',function(){
+            console.log(id+":disconnect~");
+            delete socketShops[id];
+           // socket.broadcast.send({cmd:"list",data:Object.keys(socketShops)});
+        });
+    });
+};

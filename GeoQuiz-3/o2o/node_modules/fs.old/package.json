@@ -1,0 +1,14 @@
+{
+  "name": "fs",
+  "version": "0.0.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "readme": "ERROR: No README data found!",
+  "_id": "fs@0.0.2",
+  "_from": "fs@"
+}

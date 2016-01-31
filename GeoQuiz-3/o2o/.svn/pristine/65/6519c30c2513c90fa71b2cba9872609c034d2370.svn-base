@@ -1,0 +1,20 @@
+module.exports = function(app){
+    var fs=require("fs");
+    app.get('/login',function(req,res){
+        res.render('login');
+    });
+    app.post('/login', function(req,res){
+        var name=req.body.userName ;
+        var pwd=req.body.pwd;
+        var type=req.body.userType;
+        var data=fs.readFileSync("test","utf-8");
+        var   users=JSON.parse(data);
+        console.log(users) ;
+        for(var i=0;i<users.data.length;i++) {
+          if(users.data[i].userName==name&& users.data[i].pwd==pwd&&users.data[i].userType==type)         {
+           //res.redirect('/list');
+          }
+
+        }
+    });
+};

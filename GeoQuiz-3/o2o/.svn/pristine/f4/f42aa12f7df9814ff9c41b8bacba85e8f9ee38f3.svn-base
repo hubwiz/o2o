@@ -1,0 +1,46 @@
+module.exports = function(app){
+    var io = require('socket.io')(app);
+    var sockets = {};
+    var socketShops={};
+    io.use(function(socket,next){
+        console.log('socket登录验证');
+        socket.name="hello";
+        var query = socket.handshake.query;
+        if(!query.role) return next(new Error("登录失败！"));
+        socket.role = query.role;
+        socket.name = query.name;
+        next();
+    });
+    //普通用户房间
+    io.on('connection', function (socket) {
+        var id   = socket.id,
+            role = socket.role;
+        if(role == 1){
+            console.log('商家进入');
+            socket.join('shop');
+            var user = io.sockets.adapter.rooms['user'];
+            console.log(user);
+            socket.to('user').emit('message',{ cmd:'online',data: 'hi' });
+        }else if(role == 2){
+            console.log('用户进入');
+            socket.join('user');
+        }
+        sockets[id]=socket;
+        socket.on('message',function(packet){
+            var sp = packet.cmd;
+            switch(sp) {
+                case "shop":
+                    //socket.broadcast.send({cmd:"list",data:Object.keys(socketShops)});
+                    break;
+                case "chat":
+                    console.log(packet);
+                      socketShops[packet.data.id].send({cmd: "rec", data: packet.data.message});
+                      sockets[packet.data.id].send({cmd: "rec", data: packet.data.message});
+                    break;
+            }
+        });
+        socket.on('disconnect',function(){
+            delete sockets[id];
+        });
+    });
+};

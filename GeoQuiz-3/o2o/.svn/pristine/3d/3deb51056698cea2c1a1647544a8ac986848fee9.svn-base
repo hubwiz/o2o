@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <!--script src="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.js"></script-->
+    <title>O2OApp</title>
+</head>
+<body>
+<div data-role="page">
+
+    <div data-role="header">
+        <h1>欢迎来到我的主页</h1>
+    </div>
+
+    <div data-role="main" class="ui-content">
+        <a href="#Cars">我现在是一个移动端开发者!!</a>
+    </div>
+
+    <div data-role="footer" data-position="fixed">
+        <h1>底部文本</h1>
+    </div>
+    <div data-role="page" id="Cars">
+        <div data-role="header">
+            <h1>Cars</h1>
+        </div><!-- /header -->
+        <div data-role="content">
+            <p>We can add a list of cars</p>
+            <a href="#menu">back</a>
+        </div><!-- /content -->
+        <div data-role="footer" data-position="fixed">
+            <h4>Page Footer</h4>
+        </div><!-- /footer -->
+    </div><!-- /page -->
+</div>
+</body>
+</html>

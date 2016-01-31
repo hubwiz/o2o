@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-CN">
+    <meta charset="UTF-8">
+    <title>商家页</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        function getCookie(){
+            var result = {};
+            var arr = document.cookie.split(";");
+            arr.map(function(a){
+                var cache = a.split('=');
+                result[cache[0].trim()] = cache[1].trim();
+            });
+            return result;
+        }
+        var id;
+        var params = getCookie();
+        var socket = io.connect();
+        socket.on('connect',function(){
+            console.log('连接成功');
+        });
+        socket.on('message', function (data) {
+            console.log('收到消息:'+JSON.stringify(data));
+            switch (data.cmd) {
+                case "rec":
+                        id=data.data.id;
+                        console.log(data.data.name);
+                    document.getElementById("receiveTxt").value = data.data.message;
+                    document.getElementById("addressText").value =data.data.tel;
+                    document.getElementById("userText").value =data.data.name;
+                    //socket.send({cmd:"ok",data:{id:id,message:"ok"  }});
+                    break;
+                }
+        });
+        function sendMessage(){
+             console.log(id);
+            alert("接单成功！") ;
+            socket.send({cmd:"ok",data:{id:id,message:"接单成功！"}});
+        }
+
+    </script>
+</head>
+<body>
+<h2>商家页</h2>
+<div id="shop">
+    <table align="center" border="1">
+        <!--lable>发送到</lable><input type="text" id="sender"-->
+        <tr><td><button onclick="sendMessage()">接单</button></td><td><button onclick="cancelMessage()">取消</button></td></tr>
+        <tr><td><lable>收到的内容</lable></td><td>
+            <div>
+                <textarea type="text" id="receiveTxt"></textarea>
+            </div>
+        </td></tr>
+        <tr><td><lable>用户电话</lable></td><td><input type="text" id="addressText"></td></tr>
+        <tr><td><lable>收到的用户</lable></td><td><input type="text" id="userText"></td></tr>
+    </table>
+</div>
+</body>
+</html>

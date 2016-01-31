@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-CN">
+    <meta charset="UTF-8">
+    <title>主页面</title>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    function getCookie(name)      //获取cookie
+    {
+        var arr=document.cookie.split("&");
+        var n=arr[0].split("=");
+        var type=arr[1].split("=");
+        if(name==n[0])  return n[1] ;
+        else
+        if(name==type[0]) return type[1] ;
+        else return null;
+    }
+
+    console.log(document.cookie);
+    var userName=getCookie("name");
+    var userType=getCookie("type");
+
+    var role=userType;
+    var socket = io.connect('http://192.168.1.14:3000',{ query:{ role:userType,name:userName}});
+  socket.on('connect',function(){
+      console.log(role);
+      if(role=="2") {socket.send({cmd:"shopList",data:""});
+
+      }
+      else{
+         // socket.send({cmd:"shop",data:""});
+      }
+  });
+  socket.on('message', function (data) {
+      switch (data.cmd) {
+          case "rec": document.getElementById("receiveTxt").value = data.data;
+              break;
+
+          case "list":
+                console.log(data);
+              var options = document.getElementById("selectPerson");
+              document.getElementById("selectPerson").options.length=0;
+              for (var i = 0; i < data.data.length; i++) {     //循环添加多个值
+                  //if(data.data[i] === socket.id) continue;
+                  var opp = new Option(data.data[i], data.data[i]);
+                  options.add(opp);
+              }
+          /*  var shops = document.getElementById("allShop");
+              while(shops.hasChildNodes()) {//当div下还存在子节点时 循环继续
+                  shops.removeChild(shops.firstChild);
+              }
+             for (var i = 0; i < data.data.length; i++) {     //循环添加多个值
+                  if(data.data[i] === socket.id) continue;
+                  var buttonBtn = document.createElement("button");// 创建span
+                  buttonBtn.style.color = "red";
+                  buttonBtn.appendChild(document.createTextNode(data.data[i]));
+                  var br=document.createElement("br")
+                  shops.appendChild(buttonBtn);
+                  shops.appendChild(br);
+              }  */
+              break;
+      }
+  });
+
+  function sendMessage(){
+      var data=document.getElementById("sendTxt").value;
+      var socketid = document.getElementById("selectPerson").value; // 选中值
+      //alert(socketid);
+     // var id=document.getElementById("sender").value;
+     // alert(data+id);
+     // alert(socket.id);
+      socket.send({cmd:"chat",data:{id:socketid,message:data  }});
+  }
+
+</script>
+</head>
+<body>
+<table align="center" border="1"><tr><td>商户列表</td><td><select id="selectPerson"></select></td></tr>
+<!--lable>发送到</lable><input type="text" id="sender"-->
+        <tr><td><lable>发送内容</lable></td><td><input type="text" id="sendTxt"></select></td></tr>
+        <tr><td><button onclick="sendMessage()">发送</button></td><td></td></tr>
+        <tr><td><lable>收到的内容</lable></td><td>
+            <div>
+                <textarea type="text" id="receiveTxt"></textarea>
+        </div>
+        </td></tr>
+</table>
+
+
+
+<div id="allShop">
+    <!--商家的图片，商家的名称，商家的功能-->
+
+</div>
+</body>
+</html>

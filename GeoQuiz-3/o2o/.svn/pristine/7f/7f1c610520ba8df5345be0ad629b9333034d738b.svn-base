@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+<title>商家页</title>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    function UrlSearch()
+    {
+        var name,value;
+        var str=location.href; //取得整个地址栏
+        var num=str.indexOf("?")
+        str=str.substr(num+1); //取得所有参数   stringvar.substr(start [, length ]
+
+        var arr=str.split("&"); //各个参数放到数组里
+        for(var i=0;i < arr.length;i++){
+            num=arr[i].indexOf("=");
+            if(num>0){
+                name=arr[i].substring(0,num);
+                value=arr[i].substr(num+1);
+                this[name]=value;
+            }
+        }
+    }
+
+    var user=new UrlSearch(); //实例化
+    var socket = io.connect('http://192.168.1.102:3000',{ query:{ role:1,name:"aa",pwd:"aa"       }});
+    socket.on('connect',function(){
+        console.log(socket.id);
+        socket.send({cmd:"list",data:""});
+    });
+    socket.on('message', function (data) {
+        console.log(data);
+        if (data.cmd=="rec") {
+            //console.log("receive hello world");
+            document.getElementById("receiveTxt").value = data.data;
+        }
+
+    });
+    function sendMessage(){
+        var data=document.getElementById("sendTxt").value;
+        var socketId = document.getElementById("selectPerson").value; // 选中值
+        socket.send({cmd:"chat",data:{id:socketId,message:data  }});
+    }
+
+</script>
+</head>
+<body>
+<!--lable>发送到</lable><input type="text" id="sender"-->
+<table align="center" border="1">
+    <tr><td><lable>发送内容</lable></td><td><input type="text" id="sendTxt"></td></tr>
+    <tr><td><button onclick="sendMessage()">发送</button></td><td></td></tr>
+    <tr><td><lable>收到的内容</lable></td><td><textarea type="text" id="receiveTxt"></textarea></td></tr>
+</table>
+</body>
+</html>

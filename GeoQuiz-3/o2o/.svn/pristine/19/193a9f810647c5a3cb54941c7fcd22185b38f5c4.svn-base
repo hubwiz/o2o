@@ -1,0 +1,127 @@
+var app = require('http').createServer(handler),
+	url = require("url"),
+	path = require("path"),
+	fs = require("fs");
+var io = require('socket.io').listen(app);
+app.listen(3000,'192.168.1.14');
+
+function handler(req, res) {
+	var pathname=__dirname+url.parse(req.url).pathname;
+	if (path.extname(pathname)=="") {
+		pathname+="/";
+	}
+	if (pathname.charAt(pathname.length-1)=="/"){
+		pathname+="index.html";
+	}
+//console.log(pathname);
+//console.log(1234567890);
+	fs.exists(pathname,function(exists){
+		if(exists){
+			switch(path.extname(pathname)){
+				case ".html":
+					res.writeHead(200, {"Content-Type": "text/html"});
+			}
+
+			fs.readFile(pathname,function (err,data){
+				res.end(data);
+			});
+		} else {
+			res.writeHead(404, {"Content-Type": "text/html"});
+			res.end("<h1>404 Not Found</h1>");
+		}
+	});
+
+}
+var sockets = {};
+var socketShops={};
+var role;
+io.use(function(socket,next){
+	console.log(socket.handshake.query);
+	var user=socket.handshake.query;
+	role=user.role;
+	switch (user.role){
+		case "2" :  sockets[socket.id] = socket;
+			next();
+			break;
+		case "1" :   socketShops[socket.id]=socket; //商户
+			next();
+			break;
+		default :  next(new Error("用户类型错误！")); break;
+
+	}
+});
+io.on('connection', function (socket) {
+	var id = socket.id;
+	socket.broadcast.send({cmd:"list",data:Object.keys(socketShops)});
+	socket.on('message',function(packet){
+		var sp=packet.cmd;
+		//console.log(packet);
+		switch(sp) {
+			case "shop":
+
+				//socket.broadcast.send({cmd:"list",data:Object.keys(socketShops)});
+				break;
+			case "shopList"    :
+				//socket.broadcast.send({cmd:"list",data:Object.keys(socketShops)});
+				console.log	("走过这里了");
+				//socket.send( {cmd:"list",data:Object.keys(sockets)});
+				socket.send( {cmd:"list",data:Object.keys(socketShops)});
+				//socket.send( {cmd:"list",data:{userName:packet.data.customer,id:socket.id}});
+				break;
+			case "chat":
+				console.log(packet);
+				if(role=="2")  {
+					socketShops[packet.data.id].send({cmd: "rec", data: packet.data.message});
+				}
+				else{
+					sockets[packet.data.id].send({cmd: "rec", data: packet.data.message});
+
+				}
+				break;
+		}
+	});
+
+	socket.on('disconnect',function(){
+		console.log(id+":disconnect~");
+		//delete sockets[id];
+		delete socketShops[id];
+		//socket.broadcast.send({cmd:"list",data:Object.keys(sockets)});
+		socket.broadcast.send({cmd:"list",data:Object.keys(socketShops)});
+	});
+
+	// var id=socket.id;
+	// var hashtable=[];
+	// var temp;
+	// temp ={"id":id,"socket":socket};
+	// hashtable.push(temp);
+	// //console.log(hashtable.length);
+	// //console.log(hashtable[0]);
+	// //for(var i=0;i<hashtable.length;i++){
+	// if(hashtable[i].id==socket.id){
+
+	// hashtable[i].socket.on('open', function (data) {
+	// hashtable[i].socket.emit('show', { hello: 'world' });
+
+	// });
+
+
+	// }
+
+	// }
+	//socket.on('mydata', function (data) {
+
+
+	//socket.emit('show', { hello: 'world' });
+
+	//});
+	//socket.on('open', function (data) {
+	// socket.emit('show', { hello: 'world' });
+
+	//});
+
+
+
+
+});
+
+
